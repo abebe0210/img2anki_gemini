@@ -29,7 +29,8 @@ wheels/
 *.apkg
 *.log
 
-# 出力フォルダ
+# 入出力フォルダ
+img/
 output/
 
 # 認証情報フォルダ
