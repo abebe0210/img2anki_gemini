@@ -197,8 +197,19 @@ class AnkiCardGenerator:
         """バッチ処理結果からAnkiカードを作成"""
         media_files = []
         
-        for result, image_path in zip(results, image_files):
+        # 画像ファイル名をキーとした辞書を作成
+        image_dict = {img.name: img for img in image_files}
+        
+        for result in results:
             try:
+                # customIdから対応する画像ファイルを特定
+                custom_id = result.get("customId")
+                if not custom_id or custom_id not in image_dict:
+                    logger.warning(f"対応する画像ファイルが見つかりません: {custom_id}")
+                    continue
+                    
+                image_path = image_dict[custom_id]
+                
                 if "response" in result and result["response"]:
                     # 成功した場合
                     response = result["response"]
@@ -221,7 +232,7 @@ class AnkiCardGenerator:
                     logger.error(f"  ✗ バッチ処理エラー {image_path.name}: {error_msg}")
                     
             except Exception as e:
-                logger.error(f"結果処理エラー {image_path.name}: {e}")
+                logger.error(f"結果処理エラー: {e}")
                 continue
         
         return media_files

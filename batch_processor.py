@@ -82,7 +82,7 @@ class BatchProcessor:
                 # MIMEタイプ判定
                 mime_type = self._get_mime_type(image_path)
                 
-                # バッチリクエスト形式
+                # バッチリクエスト形式（画像ファイル名を識別子として追加）
                 request = {
                     "request": {
                         "contents": [
@@ -99,7 +99,8 @@ class BatchProcessor:
                                 ]
                             }
                         ]
-                    }
+                    },
+                    "customId": str(image_path.name)  # 画像ファイル名を識別子として追加
                 }
                 
                 batch_requests.append(json.dumps(request))

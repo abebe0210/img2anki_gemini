@@ -29,9 +29,11 @@ wheels/
 *.apkg
 *.log
 
-# 入出力フォルダ
-img/
-output/
+# 入出力フォルダの中身のみignore（フォルダ自体は保持）
+img/*
+!img/.gitkeep
+output/*
+!output/.gitkeep
 
 # 認証情報フォルダ
 credentials/
