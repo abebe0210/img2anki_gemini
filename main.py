@@ -118,12 +118,16 @@ class AnkiCardGenerator:
             return self._process_images_individual(image_files)
     
     def _process_images_individual(self, image_files: List[Path]) -> List[str]:
-        """個別処理（リアルタイム処理）"""
-        logger.info("リアルタイム処理を開始します")
+        """個別処理（リアルタイム処理）- 画像ファイル名昇順で処理"""
+        logger.info("リアルタイム処理を開始します（画像ファイル名昇順）")
+        
+        # 画像ファイルを名前で昇順ソート（確実に順序を保証）
+        sorted_image_files = sorted(image_files, key=lambda x: x.name.lower())
+        
         media_files = []
         
-        for i, image_path in enumerate(image_files, 1):
-            logger.info(f"処理中 ({i}/{len(image_files)}): {image_path.name}")
+        for i, image_path in enumerate(sorted_image_files, 1):
+            logger.info(f"処理中 ({i}/{len(sorted_image_files)}): {image_path.name}")
             
             # Geminiで解説生成
             description = self.gemini.generate_description(str(image_path))
@@ -194,20 +198,30 @@ class AnkiCardGenerator:
                 raise e
     
     def _create_cards_from_batch_results(self, results: List[Dict[str, Any]], image_files: List[Path]) -> List[str]:
-        """バッチ処理結果からAnkiカードを作成"""
+        """バッチ処理結果からAnkiカードを作成（画像ファイル名昇順）"""
         media_files = []
         
         # 画像ファイル名をキーとした辞書を作成
         image_dict = {img.name: img for img in image_files}
         
+        # 結果をcustomId（画像ファイル名）でソートして処理順序を保証
+        sorted_results = []
         for result in results:
+            custom_id = result.get("customId")
+            if custom_id and custom_id in image_dict:
+                sorted_results.append(result)
+            else:
+                logger.warning(f"対応する画像ファイルが見つかりません: {custom_id}")
+        
+        # customId（画像ファイル名）で昇順ソート
+        sorted_results.sort(key=lambda x: x.get("customId", "").lower())
+        
+        logger.info(f"バッチ結果を画像ファイル名昇順で処理開始")
+        
+        for result in sorted_results:
             try:
                 # customIdから対応する画像ファイルを特定
                 custom_id = result.get("customId")
-                if not custom_id or custom_id not in image_dict:
-                    logger.warning(f"対応する画像ファイルが見つかりません: {custom_id}")
-                    continue
-                    
                 image_path = image_dict[custom_id]
                 
                 if "response" in result and result["response"]:

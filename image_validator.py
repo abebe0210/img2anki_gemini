@@ -55,7 +55,7 @@ class ImageValidator:
             return False
     
     def get_valid_images(self, folder_path: str) -> list:
-        """フォルダ内の有効な画像ファイル一覧を取得"""
+        """フォルダ内の有効な画像ファイル一覧を取得（ファイル名昇順）"""
         folder = Path(folder_path)
         
         if not folder.exists():
@@ -69,5 +69,8 @@ class ImageValidator:
                 if self.validate_image(str(file_path)):
                     valid_images.append(file_path)
         
-        logger.info(f"有効な画像ファイル: {len(valid_images)}個")
+        # ファイル名で昇順ソート
+        valid_images.sort(key=lambda x: x.name.lower())
+        
+        logger.info(f"有効な画像ファイル: {len(valid_images)}個（ファイル名昇順）")
         return valid_images

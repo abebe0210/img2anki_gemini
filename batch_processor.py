@@ -71,10 +71,14 @@ class BatchProcessor:
         return f"gs://{self.bucket_name}/{blob_name}"
     
     def prepare_batch_requests(self, image_files: List[Path]) -> List[str]:
-        """バッチ処理用のリクエストデータを準備"""
+        """バッチ処理用のリクエストデータを準備（画像ファイル名昇順）"""
         batch_requests = []
         
-        for image_path in image_files:
+        # 画像ファイルを名前で昇順ソート（処理順序を保証）
+        sorted_image_files = sorted(image_files, key=lambda x: x.name.lower())
+        logger.info(f"バッチリクエストを画像ファイル名昇順で準備開始")
+        
+        for image_path in sorted_image_files:
             try:
                 # 画像をCloud Storageにアップロード
                 image_uri = self.upload_image_to_storage(image_path)
